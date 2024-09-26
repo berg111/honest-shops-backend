@@ -11,25 +11,25 @@ from sqlalchemy.sql import func
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
-db = SQLAlchemy(app)
-cors = CORS(app)
+application = Flask(__name__)
+application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
+db = SQLAlchemy(application)
+cors = CORS(application)
 
 load_dotenv()
 GOOGLE_PLACES_API_KEY = os.getenv('GOOGLE_PLACES_API_KEY')
 SERVER_EMAIL = os.getenv('SERVER_EMAIL')
 CONTACT_RECIPIENT = os.getenv('CONTACT_RECIPIENT')
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587  # TLS port
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = SERVER_EMAIL  # Your Gmail address
-app.config['MAIL_PASSWORD'] = os.getenv('GOOGLE_EMAIL_APP_PASS')  # The app password you generated
-app.config['MAIL_DEFAULT_SENDER'] = ('Honest Shops SERVER', SERVER_EMAIL)  # Default sender name and Gmail address
+application.config['MAIL_SERVER'] = 'smtp.gmail.com'
+application.config['MAIL_PORT'] = 587  # TLS port
+application.config['MAIL_USE_TLS'] = True
+application.config['MAIL_USE_SSL'] = False
+application.config['MAIL_USERNAME'] = SERVER_EMAIL  # Your Gmail address
+application.config['MAIL_PASSWORD'] = os.getenv('GOOGLE_EMAIL_APP_PASS')  # The app password you generated
+application.config['MAIL_DEFAULT_SENDER'] = ('Honest Shops SERVER', SERVER_EMAIL)  # Default sender name and Gmail address
 
-mail = Mail(app)
+mail = Mail(application)
 
 
 class State(db.Model):
@@ -99,14 +99,14 @@ class Shop(db.Model):
             "is_verified": self.is_verified,
         }
 
-@app.route('/')
+@application.route('/')
 def index():
     shops = Shop.query.all()
     addresses = Address.query.all()
     states = State.query.all()
     return render_template('index.html', shops=shops, addresses=addresses, states=states)
 
-@app.route('/create/state/', methods=('GET', 'POST'))
+@application.route('/create/state/', methods=('GET', 'POST'))
 def create_state():
     if request.method == 'POST':
         name = request.form['name']
@@ -117,7 +117,7 @@ def create_state():
     
     return render_template('create_state.html')
 
-@app.route('/create/address/', methods=('GET', 'POST'))
+@application.route('/create/address/', methods=('GET', 'POST'))
 def create_address():
     if request.method == 'POST':
         address_1 = request.form['address_1']
@@ -139,7 +139,7 @@ def create_address():
     
     return render_template('create_address.html')
 
-@app.route('/create/shop/', methods=('GET', 'POST'))
+@application.route('/create/shop/', methods=('GET', 'POST'))
 def create_shop():
     if request.method == 'POST':
         name = request.form['name']
@@ -163,7 +163,7 @@ def create_shop():
 
 
 # Routes for front-end
-@app.route('/get-all-shops', methods=['GET'])
+@application.route('/get-all-shops', methods=['GET'])
 def get_all_shops():
 
     # MANUALLY ADDING SHOPS
@@ -216,7 +216,7 @@ def format_google_listing(google_response):
 
     return formatted_listing
 
-@app.route('/get-google-listing', methods=['GET'])
+@application.route('/get-google-listing', methods=['GET'])
 def get_google_listing():
     place_id = request.args.get('placeId')
 
@@ -242,7 +242,7 @@ def get_google_listing():
         print(f"Error fetching Google listing: {e}")
         return jsonify({'error': 'Failed to fetch Google listing'}), 500
 
-@app.route('/handle-contact-form', methods=['POST'])
+@application.route('/handle-contact-form', methods=['POST'])
 def handle_contact_form():
     data = request.json
 
